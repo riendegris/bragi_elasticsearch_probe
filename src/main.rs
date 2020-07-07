@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use clap::{App, Arg};
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use std::collections::HashMap;
@@ -139,9 +140,35 @@ fn is_public(status: &PrivateStatus) -> bool {
     status == &PrivateStatus::Public
 }
 
-fn main() {
-    let arg = std::env::args().skip(1).next();
-    let env = arg.unwrap_or(String::from("dev")); // This is the requested environment
+fn main() -> Result<(), Error> {
+    // We read env.json a first time to get a list of available
+    // environments, which will be used in the help message
+    let envs = fs::read_to_string("env.json").context(IOError {
+        msg: "Could not open env.json",
+    })?;
+    let envs: Vec<Env> = serde_json::from_str(&envs).context(JSONError {
+        msg: "Could not deserialize env.json content",
+    })?;
+    let envs: Vec<String> = envs.into_iter().map(|e| e.env).collect();
+    let envs = envs.join(", ");
+    let matches = App::new("Elasticsearch Discovery")
+        .version("0.2")
+        .author("Matthieu Paindavoine")
+        .about("Provide a list of indexes available in a given environment")
+        .arg(
+            Arg::with_name("environment")
+                .help(&format!("target environment (one of '{}')", envs))
+                .required(true),
+        )
+        .get_matches();
+    let env = matches.value_of("environment").ok_or(Error::Environment {
+        env: String::from("You did not provide an environment"),
+    })?;
+    if !envs.contains(env) {
+        return Err(Error::Environment {
+            env: format!("{} is not a known environment. Use one of {}", env, envs),
+        });
+    }
     let bragi = run(&env).unwrap_or(BragiInfo {
         label: String::from(env),
         url: String::from(""),
@@ -152,6 +179,7 @@ fn main() {
     });
     let b = serde_json::to_string(&bragi).unwrap();
     println!("{}", b);
+    Ok(())
 }
 
 fn run(env: &str) -> Result<BragiInfo, Error> {
