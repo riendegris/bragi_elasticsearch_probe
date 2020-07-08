@@ -53,8 +53,8 @@ the list of environments to scan: `env.json`:
 Alternatively, you can construct a docker container
 
 ```
-git clone https://github.com/riendegris/ctl2mimir
-cd ctl2mimir
+git clone https://github.com/riendegris/bragi_elasticsearch_probe
+cd bragi_elasticsearch_probe
 docker build -t besp -f ./docker/Dockerfile .
 ```
 
@@ -64,7 +64,7 @@ Lets try the program using docker... Assuming you ran the docker build command a
 can now run the container using
 
 ```
-docker run
+docker run -p 8080:8080 besp:latest
 ```
 
 This will expose a GraphQL API on port 8080.
@@ -75,7 +75,8 @@ You can test this interface directly in your browser via the playground, or usin
 
 ### Playground
 
-The playground is a GraphQL IDE
+The playground is a GraphQL IDE. It is available at `localhost:8080`
+
 ### Break down into end to end tests
 
 ```
