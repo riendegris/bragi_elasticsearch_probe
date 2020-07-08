@@ -1,0 +1,60 @@
+type BragiInfo {
+  label: String!
+  url: String!
+  version: String!
+  status: BragiStatus!
+  updatedAt: DateTimeUtc!
+  elastic: ElasticsearchInfo
+}
+
+enum BragiStatus {
+  AVAILABLE
+  BRAGI_NOT_AVAILABLE
+  ELASTICSEARCH_NOT_AVAILABLE
+}
+
+# DateTime
+scalar DateTimeUtc
+
+type ElasticsearchIndexInfo {
+  label: String!
+  placeType: String!
+  coverage: String!
+  private: PrivateStatus!
+  createdAt: DateTimeUtc!
+  count: Int!
+  updatedAt: DateTimeUtc!
+}
+
+type ElasticsearchInfo {
+  label: String!
+  url: String!
+  name: String!
+  status: ServerStatus!
+  version: String!
+  indices: [ElasticsearchIndexInfo!]!
+  indexPrefix: String!
+  updatedAt: DateTimeUtc!
+}
+
+# The response body for multiple indexes
+type MultiEnvironmentsResponseBody {
+  environments: [BragiInfo!]!
+  environmentsCount: Int!
+}
+
+enum PrivateStatus {
+  PRIVATE
+  PUBLIC
+}
+
+type Query {
+  # Return a list of all environments
+  environments: MultiEnvironmentsResponseBody!
+}
+
+enum ServerStatus {
+  AVAILABLE
+  NOT_AVAILABLE
+}
+
